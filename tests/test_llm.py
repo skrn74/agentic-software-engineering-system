@@ -8,6 +8,13 @@ from agentic.agents.requirement import run as analyze_run
 from agentic.orchestrator import Context
 from agentic.reasoner import LLMReasoner, Reasoner
 
+import os
+import urllib.request
+
+# Local mock servers must bypass any corporate proxy configured on this machine.
+for _k in ("NO_PROXY", "no_proxy"):
+    os.environ[_k] = "127.0.0.1,localhost"
+urllib.request.install_opener(None)
 
 def serve(handler_cls):
     srv = HTTPServer(("127.0.0.1", 0), handler_cls)
