@@ -4,6 +4,25 @@ Turns a software requirement into a reviewable engineering outcome: requirement 
 
 **Requirements:** Python 3.10 or newer (tested on 3.10 and 3.12). **No third-party packages, no model, no network.**
 
+## Setup
+
+    git clone https://github.com/skrn74/agentic-software-engineering-system.git
+    cd agentic-software-engineering-system
+    python3 --version                                # 3.10 or newer
+    python3 -m unittest discover -s tests -t .       # optional: 31 tests
+
+Nothing needs to be installed.
+
+## Where to find each deliverable
+
+| Assignment item | Where |
+|---|---|
+| Runnable prototype | `run.py`, `agentic/` |
+| Architecture overview | `docs/ARCHITECTURE.md` |
+| Example scenarios (greenfield, brownfield, ambiguous) | "The three required scenarios" below, and `examples/` |
+| Setup instructions | "Setup" above |
+| Testing approach, limitations and trade-offs | "Testing approach" and "Known limitations" below |
+
 ## Quick start
 
 ```
