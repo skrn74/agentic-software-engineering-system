@@ -1,0 +1,43 @@
+{"t": 0.0, "task": "analyze", "event": "start", "detail": "Understand the requirement and find ambiguities"}
+{"t": 0.0, "task": "analyze", "event": "done", "detail": "brownfield / url_shortener; 2 ambiguities (0 blocking)"}
+{"t": 0.0, "task": "clarify", "event": "start", "detail": "Human confirms interpretation and assumptions"}
+{"t": 0.0, "task": "clarify", "event": "gate", "detail": "APPROVED: auto-approved (demo mode)"}
+{"t": 0.0, "task": "clarify", "event": "done", "detail": "approved: auto-approved (demo mode)"}
+{"t": 0.0, "task": "plan", "event": "start", "detail": "Decompose into a task graph"}
+{"t": 0.0, "task": "plan", "event": "done", "detail": "12 tasks planned"}
+{"t": 0.0, "task": "plan", "event": "spawn", "detail": "scan, impact, baseline, design_change, approve_design, risk, tests, red, patch, validate, summary, approve_final"}
+{"t": 0.01, "task": "scan", "event": "start", "detail": "Scan the existing repository (modules, imports, routes, tables)"}
+{"t": 0.01, "task": "scan", "event": "done", "detail": "5 modules, 2 routes, 1 tables, 2 findings"}
+{"t": 0.01, "task": "impact", "event": "start", "detail": "Impact analysis (root cause, impacted modules, APIs, data flows)"}
+{"t": 0.02, "task": "baseline", "event": "start", "detail": "Run the existing test suite on the untouched repo"}
+{"t": 0.02, "task": "impact", "event": "done", "detail": "modify 3 module(s), 0 affected, 2 API(s) impacted"}
+{"t": 0.02, "task": "design_change", "event": "start", "detail": "Design the change, compatibility and rollback"}
+{"t": 0.02, "task": "design_change", "event": "retry", "detail": "simulated tool timeout while loading design knowledge (attempt 1/3)"}
+{"t": 0.02, "task": "risk", "event": "start", "detail": "Risk register, failure scenarios and test strategy"}
+{"t": 0.02, "task": "risk", "event": "done", "detail": "5 risks, 2 failure scenarios, 6 validation layers"}
+{"t": 0.32, "task": "design_change", "event": "start", "detail": "Design the change, compatibility and rollback"}
+{"t": 0.32, "task": "design_change", "event": "done", "detail": "Collision-safe code generation and click analytics"}
+{"t": 0.32, "task": "approve_design", "event": "start", "detail": "Human approval of the change design"}
+{"t": 0.32, "task": "approve_design", "event": "gate", "detail": "APPROVED: auto-approved (demo mode)"}
+{"t": 0.32, "task": "approve_design", "event": "done", "detail": "approved: auto-approved (demo mode)"}
+{"t": 0.38, "task": "tests", "event": "start", "detail": "Write regression tests for the intended behaviour"}
+{"t": 0.38, "task": "tests", "event": "done", "detail": "5 regression tests written before the fix (test-first)"}
+{"t": 0.4, "task": "patch", "event": "start", "detail": "Apply the change to a copy and produce a reviewable diff"}
+{"t": 0.4, "task": "patch", "event": "fault", "detail": "injected D3: retry loop reduced to one attempt, so a collision is not resolved"}
+{"t": 0.41, "task": "patch", "event": "done", "detail": "patched 3 file(s): +128 -6 lines"}
+{"t": 2.72, "task": "baseline", "event": "done", "detail": "existing suite healthy: 3 tests pass"}
+{"t": 2.72, "task": "red", "event": "start", "detail": "Run new tests on the UNPATCHED repo (expect failures)"}
+{"t": 5.59, "task": "red", "event": "done", "detail": "reproduced: 3 of 8 tests fail on the unpatched repo (expected)"}
+{"t": 5.59, "task": "validate", "event": "start", "detail": "Validate: scope guard, static checks, full test suite"}
+{"t": 8.1, "task": "validate", "event": "failed", "detail": "test suite (unit, integration, contract / regression): 8 tests in 2.5s; failing: test_forced_collision_does_not_overwrite -> spawning repair_1 and validate_2"}
+{"t": 8.1, "task": "validate", "event": "rewire", "detail": "downstream tasks now wait for validate_2"}
+{"t": 8.1, "task": "repair_1", "event": "start", "detail": "Repair from failing tests"}
+{"t": 8.1, "task": "repair_1", "event": "repaired", "detail": "D3: regenerated app.py (retry loop reduced to one attempt, so a collision is not resolved)"}
+{"t": 8.1, "task": "repair_1", "event": "done", "detail": "repaired D3"}
+{"t": 8.11, "task": "validate_2", "event": "start", "detail": "Re-validate (cycle 2)"}
+{"t": 10.79, "task": "validate_2", "event": "done", "detail": "all 3 checks passed, 8 tests pass"}
+{"t": 10.79, "task": "summary", "event": "start", "detail": "Write the engineering summary"}
+{"t": 10.79, "task": "summary", "event": "done", "detail": "engineering summary written"}
+{"t": 10.81, "task": "approve_final", "event": "start", "detail": "Human approval of the final outcome"}
+{"t": 10.81, "task": "approve_final", "event": "gate", "detail": "APPROVED: auto-approved (demo mode)"}
+{"t": 10.81, "task": "approve_final", "event": "done", "detail": "approved: auto-approved (demo mode)"}

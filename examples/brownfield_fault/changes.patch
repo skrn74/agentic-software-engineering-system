@@ -1,0 +1,187 @@
+--- a/app.py
++++ b/app.py
+@@ -1,8 +1,11 @@
+ import json
++import time
++from urllib.parse import urlsplit
+ 
+ from codegen import make_code
+ 
+ BASE_URL = "http://localhost:8000"
++MAX_ATTEMPTS = 8
+ 
+ 
+ def shorten_handler(store, environ, params):
+@@ -11,20 +14,32 @@
+     url = body.get("url")
+     if not url:
+         return 400, {}, {"error": "url required"}
+-    code = make_code(url)
+-    store.save(code, url)
+-    return 201, {}, {"code": code, "short_url": f"{BASE_URL}/{code}"}
++    for attempt in range(MAX_ATTEMPTS):
++        code = make_code(url, attempt)
++        if store.save_if_absent(code, url):
++            return 201, {}, {"code": code, "short_url": f"{BASE_URL}/{code}"}
++    return 503, {}, {"error": "could not allocate a unique code"}
+ 
+ 
+ def redirect_handler(store, environ, params):
+     url = store.get(params["code"])
+     if url is None:
+         return 404, {}, {"error": "not found"}
++    referrer = environ.get("HTTP_REFERER")
++    host = (urlsplit(referrer).hostname or None) if referrer else None
++    store.record_click(params["code"], time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), host)
+     return 302, {"Location": url}, None
++
++
++def stats_handler(store, environ, params):
++    if store.get(params["code"]) is None:
++        return 404, {}, {"error": "not found"}
++    return 200, {}, store.stats(params["code"])
+ 
+ 
+ ROUTES = [
+     ("POST", "/shorten", shorten_handler),
++    ("GET", "/stats/<code>", stats_handler),
+     ("GET", "/<code>", redirect_handler),
+ ]
+ 
+--- a/codegen.py
++++ b/codegen.py
+@@ -1,6 +1,15 @@
+ import hashlib
+ 
++ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
++CODE_LENGTH = 7  # 62**7 = ~3.5 trillion codes (the old scheme had 65,536)
+ 
+-def make_code(url):
+-    """Derive a short code from the URL."""
+-    return hashlib.md5(url.encode("utf-8")).hexdigest()[:4]
++
++def make_code(url, attempt=0):
++    """Derive a short code from the URL. `attempt` salts the hash so a collision can be retried."""
++    digest = hashlib.sha256(f"{attempt}:{url}".encode("utf-8")).digest()
++    n = int.from_bytes(digest[:8], "big")
++    chars = []
++    for _ in range(CODE_LENGTH):
++        n, rem = divmod(n, 62)
++        chars.append(ALPHABET[rem])
++    return "".join(chars)
+--- a/store.py
++++ b/store.py
+@@ -5,12 +5,35 @@
+     def __init__(self, path=":memory:"):
+         self.conn = sqlite3.connect(path, check_same_thread=False)
+         self.conn.execute("CREATE TABLE IF NOT EXISTS links (code TEXT PRIMARY KEY, url TEXT NOT NULL)")
++        self.conn.execute("CREATE TABLE IF NOT EXISTS clicks (id INTEGER PRIMARY KEY AUTOINCREMENT, code TEXT NOT NULL, ts TEXT NOT NULL, referrer TEXT)")
+         self.conn.commit()
+ 
+     def save(self, code, url):
++        """Legacy behaviour kept for backward compatibility. New code should use save_if_absent."""
+         self.conn.execute("INSERT OR REPLACE INTO links (code, url) VALUES (?, ?)", (code, url))
+         self.conn.commit()
++
++    def save_if_absent(self, code, url):
++        """Atomically store the mapping unless the code is taken by a DIFFERENT url. True when the code now maps to url."""
++        self.conn.execute("INSERT OR IGNORE INTO links (code, url) VALUES (?, ?)", (code, url))
++        self.conn.commit()
++        return self.get(code) == url
+ 
+     def get(self, code):
+         row = self.conn.execute("SELECT url FROM links WHERE code = ?", (code,)).fetchone()
+         return row[0] if row else None
++
++    def record_click(self, code, ts, referrer):
++        self.conn.execute("INSERT INTO clicks (code, ts, referrer) VALUES (?, ?, ?)", (code, ts, referrer))
++        self.conn.commit()
++
++    def stats(self, code):
++        total = self.conn.execute("SELECT COUNT(*) FROM clicks WHERE code = ?", (code,)).fetchone()[0]
++        by_day = self.conn.execute(
++            "SELECT substr(ts, 1, 10) AS day, COUNT(*) FROM clicks WHERE code = ? GROUP BY day ORDER BY day", (code,)).fetchall()
++        refs = self.conn.execute(
++            "SELECT COALESCE(referrer, '(direct)') AS ref, COUNT(*) AS n FROM clicks WHERE code = ? GROUP BY ref ORDER BY n DESC, ref LIMIT 5",
++            (code,)).fetchall()
++        return {"code": code, "total_clicks": total,
++                "clicks_by_day": [{"date": d, "count": n} for d, n in by_day],
++                "top_referrers": [{"referrer": r, "count": n} for r, n in refs]}
+--- /dev/null
++++ b/tests/test_regression_collision.py
+@@ -0,0 +1,75 @@
++import io
++import json
++import unittest
++from unittest import mock
++
++from app import make_app
++from store import Store
++
++
++def call(app, method, path, body=None, headers=None):
++    data = json.dumps(body).encode() if body is not None else b""
++    environ = {"REQUEST_METHOD": method, "PATH_INFO": path, "wsgi.input": io.BytesIO(data), "CONTENT_LENGTH": str(len(data))}
++    for key, value in (headers or {}).items():
++        environ["HTTP_" + key.upper().replace("-", "_")] = value
++    captured = {}
++
++    def start_response(status, response_headers):
++        captured["status"] = int(status.split()[0])
++        captured["headers"] = dict(response_headers)
++
++    raw = b"".join(app(environ, start_response))
++    return captured["status"], captured["headers"], json.loads(raw) if raw else None
++
++
++A = "https://example.com/page/351"
++B = "https://example.com/page/442"
++
++
++class TestCollisionRegression(unittest.TestCase):
++    def setUp(self):
++        self.store = Store()
++        self.app = make_app(self.store)
++
++    def _location(self, code):
++        status, headers, _ = call(self.app, "GET", "/" + code)
++        self.assertEqual(status, 302)
++        return headers["Location"]
++
++    def test_urls_sharing_the_old_hash_prefix_do_not_overwrite_each_other(self):
++        # A and B have the same first 4 hex chars of their MD5 digest (the old scheme gave them one code)
++        _, _, first = call(self.app, "POST", "/shorten", {"url": A})
++        _, _, second = call(self.app, "POST", "/shorten", {"url": B})
++        self.assertNotEqual(first["code"], second["code"])
++        self.assertEqual(self._location(first["code"]), A)
++        self.assertEqual(self._location(second["code"]), B)
++
++    def test_forced_collision_does_not_overwrite(self):
++        with mock.patch("app.make_code", side_effect=lambda url, attempt=0: "AAAA%d" % attempt):
++            _, _, first = call(self.app, "POST", "/shorten", {"url": A})
++            _, _, second = call(self.app, "POST", "/shorten", {"url": B})
++        self.assertNotEqual(first["code"], second["code"])
++        self.assertEqual(self._location(first["code"]), A)
++        self.assertEqual(self._location(second["code"]), B)
++
++    def test_legacy_codes_still_redirect(self):
++        self.store.save("ab12", "https://old.example/page")
++        self.assertEqual(self._location("ab12"), "https://old.example/page")
++
++
++class TestAnalytics(unittest.TestCase):
++    def setUp(self):
++        self.app = make_app(Store())
++
++    def test_redirects_are_recorded_and_reported_by_stats(self):
++        _, _, created = call(self.app, "POST", "/shorten", {"url": "https://example.com/x"})
++        code = created["code"]
++        call(self.app, "GET", "/" + code, headers={"Referer": "https://news.example/story"})
++        call(self.app, "GET", "/" + code, headers={"Referer": "https://news.example/other"})
++        status, _, stats = call(self.app, "GET", "/stats/" + code)
++        self.assertEqual(status, 200)
++        self.assertEqual(stats["total_clicks"], 2)
++        self.assertEqual(stats["top_referrers"], [{"referrer": "news.example", "count": 2}])
++
++    def test_stats_for_unknown_code_returns_404(self):
++        self.assertEqual(call(self.app, "GET", "/stats/nope")[0], 404)

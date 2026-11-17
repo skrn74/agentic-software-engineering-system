@@ -1,0 +1,30 @@
+{"t": 0.0, "task": "analyze", "event": "start", "detail": "Understand the requirement and find ambiguities"}
+{"t": 0.0, "task": "analyze", "event": "done", "detail": "greenfield / url_shortener; 5 ambiguities (0 blocking)"}
+{"t": 0.0, "task": "clarify", "event": "start", "detail": "Human confirms interpretation and assumptions"}
+{"t": 0.0, "task": "clarify", "event": "gate", "detail": "APPROVED: auto-approved (demo mode)"}
+{"t": 0.0, "task": "clarify", "event": "done", "detail": "approved: auto-approved (demo mode)"}
+{"t": 0.0, "task": "plan", "event": "start", "detail": "Decompose into a task graph"}
+{"t": 0.0, "task": "plan", "event": "done", "detail": "10 tasks planned"}
+{"t": 0.0, "task": "plan", "event": "spawn", "detail": "design, approve_design, contract, code, tests, docs, risk, validate, summary, approve_final"}
+{"t": 0.01, "task": "design", "event": "start", "detail": "Design architecture, data model, API and capacity"}
+{"t": 0.01, "task": "design", "event": "done", "detail": "greenfield design with capacity estimate"}
+{"t": 0.01, "task": "approve_design", "event": "start", "detail": "Human approval of the design"}
+{"t": 0.01, "task": "approve_design", "event": "gate", "detail": "APPROVED: auto-approved (demo mode)"}
+{"t": 0.01, "task": "risk", "event": "start", "detail": "Risk register, failure scenarios and test strategy"}
+{"t": 0.01, "task": "approve_design", "event": "done", "detail": "approved: auto-approved (demo mode)"}
+{"t": 0.01, "task": "risk", "event": "done", "detail": "10 risks, 5 failure scenarios, 6 validation layers"}
+{"t": 0.01, "task": "contract", "event": "start", "detail": "Generate OpenAPI contract from the design"}
+{"t": 0.01, "task": "code", "event": "start", "detail": "Generate service code (domain, repository, service, HTTP)"}
+{"t": 0.01, "task": "contract", "event": "done", "detail": "OpenAPI 3.0.3 with 4 operations"}
+{"t": 0.02, "task": "code", "event": "done", "detail": "5 source files"}
+{"t": 0.02, "task": "tests", "event": "start", "detail": "Generate unit, integration and contract tests"}
+{"t": 0.02, "task": "docs", "event": "start", "detail": "Generate README and runbook"}
+{"t": 0.02, "task": "docs", "event": "done", "detail": "README and runbook"}
+{"t": 0.02, "task": "tests", "event": "done", "detail": "5 test files, 24 test methods (unit, integration, contract)"}
+{"t": 0.02, "task": "validate", "event": "start", "detail": "Validate: static checks, tests, contract"}
+{"t": 3.68, "task": "validate", "event": "done", "detail": "all 4 checks passed, 24 tests pass"}
+{"t": 3.68, "task": "summary", "event": "start", "detail": "Write the engineering summary"}
+{"t": 3.69, "task": "summary", "event": "done", "detail": "engineering summary written"}
+{"t": 3.69, "task": "approve_final", "event": "start", "detail": "Human approval of the final outcome"}
+{"t": 3.69, "task": "approve_final", "event": "gate", "detail": "APPROVED: auto-approved (demo mode)"}
+{"t": 3.69, "task": "approve_final", "event": "done", "detail": "approved: auto-approved (demo mode)"}

@@ -1,0 +1,39 @@
+{"t": 0.0, "task": "analyze", "event": "start", "detail": "Understand the requirement and find ambiguities"}
+{"t": 0.0, "task": "analyze", "event": "done", "detail": "greenfield / url_shortener; 5 ambiguities (0 blocking)"}
+{"t": 0.0, "task": "clarify", "event": "start", "detail": "Human confirms interpretation and assumptions"}
+{"t": 0.0, "task": "clarify", "event": "gate", "detail": "APPROVED: auto-approved (demo mode)"}
+{"t": 0.0, "task": "clarify", "event": "done", "detail": "approved: auto-approved (demo mode)"}
+{"t": 0.0, "task": "plan", "event": "start", "detail": "Decompose into a task graph"}
+{"t": 0.0, "task": "plan", "event": "done", "detail": "10 tasks planned"}
+{"t": 0.0, "task": "plan", "event": "spawn", "detail": "design, approve_design, contract, code, tests, docs, risk, validate, summary, approve_final"}
+{"t": 0.05, "task": "design", "event": "start", "detail": "Design architecture, data model, API and capacity"}
+{"t": 0.05, "task": "design", "event": "retry", "detail": "simulated tool timeout while loading design knowledge (attempt 1/3)"}
+{"t": 0.35, "task": "design", "event": "start", "detail": "Design architecture, data model, API and capacity"}
+{"t": 0.35, "task": "design", "event": "done", "detail": "greenfield design with capacity estimate"}
+{"t": 0.35, "task": "approve_design", "event": "start", "detail": "Human approval of the design"}
+{"t": 0.35, "task": "approve_design", "event": "gate", "detail": "APPROVED: auto-approved (demo mode)"}
+{"t": 0.35, "task": "risk", "event": "start", "detail": "Risk register, failure scenarios and test strategy"}
+{"t": 0.35, "task": "approve_design", "event": "done", "detail": "approved: auto-approved (demo mode)"}
+{"t": 0.35, "task": "risk", "event": "done", "detail": "10 risks, 5 failure scenarios, 6 validation layers"}
+{"t": 0.36, "task": "contract", "event": "start", "detail": "Generate OpenAPI contract from the design"}
+{"t": 0.36, "task": "code", "event": "start", "detail": "Generate service code (domain, repository, service, HTTP)"}
+{"t": 0.36, "task": "contract", "event": "done", "detail": "OpenAPI 3.0.3 with 4 operations"}
+{"t": 0.36, "task": "code", "event": "fault", "detail": "injected D1: redirect path forgets to record the click (analytics silently broken)"}
+{"t": 0.36, "task": "code", "event": "done", "detail": "5 source files"}
+{"t": 0.36, "task": "tests", "event": "start", "detail": "Generate unit, integration and contract tests"}
+{"t": 0.36, "task": "docs", "event": "start", "detail": "Generate README and runbook"}
+{"t": 0.36, "task": "docs", "event": "done", "detail": "README and runbook"}
+{"t": 0.36, "task": "tests", "event": "done", "detail": "5 test files, 24 test methods (unit, integration, contract)"}
+{"t": 0.36, "task": "validate", "event": "start", "detail": "Validate: static checks, tests, contract"}
+{"t": 5.19, "task": "validate", "event": "failed", "detail": "test suite (unit, integration, contract / regression): 24 tests in 4.81s; failing: test_create_redirect_and_stats_flow, test_resolve_records_click, test_stats_aggregates_clicks_by_day_and_referrer -> spawning repair_1 and validate_2"}
+{"t": 5.19, "task": "validate", "event": "rewire", "detail": "downstream tasks now wait for validate_2"}
+{"t": 5.19, "task": "repair_1", "event": "start", "detail": "Repair from failing tests"}
+{"t": 5.19, "task": "repair_1", "event": "repaired", "detail": "D1: regenerated shortener/service.py (redirect path forgets to record the click (analytics silently broken))"}
+{"t": 5.19, "task": "repair_1", "event": "done", "detail": "repaired D1"}
+{"t": 5.23, "task": "validate_2", "event": "start", "detail": "Re-validate (cycle 2)"}
+{"t": 11.3, "task": "validate_2", "event": "done", "detail": "all 4 checks passed, 24 tests pass"}
+{"t": 11.3, "task": "summary", "event": "start", "detail": "Write the engineering summary"}
+{"t": 11.3, "task": "summary", "event": "done", "detail": "engineering summary written"}
+{"t": 11.3, "task": "approve_final", "event": "start", "detail": "Human approval of the final outcome"}
+{"t": 11.3, "task": "approve_final", "event": "gate", "detail": "APPROVED: auto-approved (demo mode)"}
+{"t": 11.3, "task": "approve_final", "event": "done", "detail": "approved: auto-approved (demo mode)"}
