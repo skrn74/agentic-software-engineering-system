@@ -2,7 +2,7 @@
 
 Turns a software requirement into a reviewable engineering outcome: requirement analysis, task graph, design, code, API contract, tests, validation, risks and a final summary. Agents execute across multiple steps; humans approve at gates. See `docs/ARCHITECTURE.md` for the architecture and `examples/` for real outputs.
 
-**Requirements:** Python 3.9 or newer (developed and tested on Python 3.12). **No third-party packages, no model, no network.**
+**Requirements:** Python 3.10 or newer (tested on 3.10 and 3.12). **No third-party packages, no model, no network.**
 
 ## Quick start
 
